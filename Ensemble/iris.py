@@ -6,6 +6,7 @@ import numpy as np
 import networkx as nx
 from networkx.algorithms.community import greedy_modularity_communities
 from networkx.algorithms.cuts import conductance
+from networkx.algorithms.cuts import volume
 from networkx.algorithms.community import quality as qu
 
 # import some data to play with
@@ -32,12 +33,12 @@ distanceMatrix = pdist(Data)
 Z = hier.linkage(distanceMatrix, method='ward')
 
 # cut dendrogram at certain distances
-cutDistance = [3]
+cutDistance = [0.5]
 
 # Calculate score and draw graph for each cut distance
 for a in range (len(cutDistance)):
     fc = hier.fcluster(Z, cutDistance[a], criterion='distance')
-    clusterL=[[]]
+    clusterL=[]
     print("\n")
     print("Ensemble Scores for Cutsize: ", cutDistance[a])
     print("\n")
@@ -58,7 +59,7 @@ for a in range (len(cutDistance)):
     # Create a networkx graph object
     new_graph = nx.Graph() 
     
-    adjac = [(0,0)] # should not make any difference
+    adjac = [] # should not make any difference
     n = len(Z)
     # make adjacency matrix from linkage matrix
     for bb in Z:
@@ -106,6 +107,8 @@ for a in range (len(cutDistance)):
         if clusterL[i] == []:
             # catch Division by zero
             continue
+        if nx.volume(new_graph,clusterL[i]) == 0:
+            continue
         # calculate Cond for current Cluster in list of Clusters 
         currentCond = conductance(new_graph,clusterL[i])
         sumOfCond.append(currentCond)
@@ -115,4 +118,4 @@ for a in range (len(cutDistance)):
     print("\n")
     
     # edge_betweenness_centrality
-    print("Edge Betweenness Centrality Score: ", barbaverageEdge)
+print("Edge Betweenness Centrality Score: ", barbaverageEdge)
